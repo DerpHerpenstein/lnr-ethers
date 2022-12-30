@@ -1,0 +1,23 @@
+{
+  "name": "lnr-ethers",
+  "version": "0.1.0",
+  "description": "Integrates the LNR resolver and Ethers",
+  "main": "index.js",
+  "scripts": {
+    "production": "WEBPACK_ENV=build webpack",
+    "development": "WEBPACK_ENV=dev webpack --progress --colors --watch",
+    "test": "node test/test.js"
+  },
+  "keywords": [
+    "LNR",
+    "linagee",
+    "ethers"
+  ],
+  "author": "Derp Herpenstein",
+  "license": "MIT",
+  "dependencies": {
+    "@adraffy/ens-normalize": "^1.8.3",
+    "ethers": "^5.7.2",
+    "webpack-cli": "^5.0.1"
+  }
+}
