@@ -28,7 +28,6 @@ class LNR {
         return this.ethers.utils.toUtf8String(this.ethers.utils.arrayify(_hex).filter(n => n != 0));
       }
 
-
       stringToBytes32(_string){
         var result = this.ethers.utils.hexlify(this.ethers.utils.toUtf8Bytes(_string));
         while (result.length < 66) { result += '0'; }
@@ -51,7 +50,6 @@ class LNR {
       bytes32ToDomain(_name){
         return this.  bytes32ToString(_name) + ".og";
       }
-
 
       normalize(_name) {
         return ens_normalize(_name);
@@ -100,7 +98,6 @@ class LNR {
           });
         }
       }
-
 
       async lookupAddress(_address) {
         const that = this;
@@ -227,6 +224,7 @@ class LNR {
 
 
     //--------------LINAGEE---------------------------
+
     async isUnwrappedOwner(_name){
       let owner = await this.owner(_name);
       if(owner == null || owner[0] != (await this.signer.getAddress())){
@@ -264,7 +262,7 @@ class LNR {
       }
     }
 
-    owner(_name){
+    async owner(_name){
       let that = this;
       let nameBytes = this.domainToBytes32(_name);
       return this.linageeContract.owner(nameBytes).then(function(result){
