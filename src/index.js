@@ -159,6 +159,73 @@ class LNR {
 
     //--------------WRAPPER---------------------------
 
+    async createWrapper(_name){
+      let isUnwrappedOwner = await this.isUnwrappedOwner(_name);
+      if(!isUnwrappedOwner[0]){
+        throw isUnwrappedOwner[1];
+      }
+      else{
+        let nameBytes = this.domainToBytes32(_name);
+        return this.wrapperContract.createWrapper(nameBytes).then(function(result){
+          return result;
+        });
+      }
+    }
+
+    async wrap(_name){
+      let isUnwrappedOwner = await this.isUnwrappedOwner(_name);
+      if(!isUnwrappedOwner[0]){
+        throw isUnwrappedOwner[1];
+      }
+      else{
+        let nameBytes = this.domainToBytes32(_name);
+        return this.wrapperContract.wrap(nameBytes).then(function(result){
+          return result;
+        });
+      }
+    }
+
+    async unwrap(_name){
+      let isUnwrappedOwner = await this.isUnwrappedOwner(_name);
+      if(isUnwrappedOwner.length == 3 && isUnwrappedOwner[2] == (await this.signer.getAddress())){
+        let nameBytes = this.domainToBytes32(_name);
+        let that = this;
+        return that.wrapperContract.nameToId(nameBytes).then(function(tokenId){
+          return that.wrapperContract.unwrap(tokenId).then(function(result){
+            return result;
+          });
+        });
+      }
+      else if(isUnwrappedOwner[0] == true){
+        throw "This domain is unwrapped";
+      }
+      else {
+        throw isUnwrappedOwner[1];
+      }
+    }
+
+    async safeTransferFrom(_from, _to, _name){
+      let isUnwrappedOwner = await this.isUnwrappedOwner(_name);
+      if(isUnwrappedOwner.length == 3 && isUnwrappedOwner[2] == (await this.signer.getAddress())){
+        let nameBytes = this.domainToBytes32(_name);
+        let that = this;
+        return that.wrapperContract.nameToId(nameBytes).then(function(tokenId){
+          return that.wrapperContract["safeTransferFrom(address,address,uint256)"](_from, _to, tokenId).then(function(result){
+            return result;
+          });
+        });
+
+      }
+      else if(isUnwrappedOwner[0] == true){
+        throw "This domain is unwrapped";
+      }
+      else {
+        throw isUnwrappedOwner[1];
+      }
+    }
+
+
+
     //--------------LINAGEE---------------------------
     async isUnwrappedOwner(_name){
       let owner = await this.owner(_name);
@@ -166,7 +233,7 @@ class LNR {
         return [false, "This domain is not yours"];
       }
       else if(owner[1] == "wrapped"){
-        return [false, "Cannot set/unset controller on a wrapped name"];
+        return [false, "This domain is wrapped", owner[0]];
       }
       return [true, owner[0]];
     }
