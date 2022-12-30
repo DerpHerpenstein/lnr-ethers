@@ -7,12 +7,12 @@ var env = process.env.WEBPACK_ENV;
 var libraryName = package.name;
 var config;
 
-if (env === 'production') {
+if (true/*env === 'production'*/) {
   config = {
     entry: './src/index.js',
     output: {
       path: path.resolve(__dirname, 'dist'),
-      filename: libraryName + "-" + package.version + '.min.js',
+      filename: libraryName + "-" + package.version + '.js',
       globalObject: 'this',
       library: {
         name: 'LNR',
