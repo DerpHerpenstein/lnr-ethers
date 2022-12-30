@@ -22,7 +22,7 @@ class LNR {
       this.linageeContract = new this.ethers.Contract(this.linageeAddress, this.linageeAbi, this.signer);
     }
 
-      //--------------RESOLVER---------------------------
+      //--------------HELPERS---------------------------
 
       bytes32ToString(_hex){
         return this.ethers.utils.toUtf8String(this.ethers.utils.arrayify(_hex).filter(n => n != 0));
@@ -53,27 +53,6 @@ class LNR {
         return ens_normalize(_name);
       }
 
-      owner(_name){
-        let that = this;
-        let nameBytes = this.domainToBytes32(_name);
-        return this.linageeContract.owner(nameBytes).then(function(result){
-          if(result === that.ethers.constants.AddressZero)
-            return null;
-          else{
-            if(result != that.wrapperAddress){
-              return [result, "unwrapped"];
-            }
-            else{
-              return that.wrapperContract.nameToId(nameBytes).then(function(tokenId){
-                return that.wrapperContract.ownerOf(tokenId).then(function(tokenOwner){
-                  return [tokenOwner, "wrapped"];
-                });
-              });
-            }
-          }
-        });
-      }
-
       isValidDomain(_name){
         let normalized = this.normalize(_name);
         if((normalized.split(".").length - 1) > 1){
@@ -89,6 +68,8 @@ class LNR {
           return [true, normalized];
         }
       }
+
+      //--------------RESOLVER---------------------------
 
       async resolveName(_name) {
         let checkIsValid = this.isValidDomain(_name);
@@ -121,6 +102,27 @@ class LNR {
     //--------------WRAPPER---------------------------
 
     //--------------LINAGEE---------------------------
+
+    owner(_name){
+      let that = this;
+      let nameBytes = this.domainToBytes32(_name);
+      return this.linageeContract.owner(nameBytes).then(function(result){
+        if(result === that.ethers.constants.AddressZero)
+          return null;
+        else{
+          if(result != that.wrapperAddress){
+            return [result, "unwrapped"];
+          }
+          else{
+            return that.wrapperContract.nameToId(nameBytes).then(function(tokenId){
+              return that.wrapperContract.ownerOf(tokenId).then(function(tokenOwner){
+                return [tokenOwner, "wrapped"];
+              });
+            });
+          }
+        }
+      });
+    }
 
 }
 
