@@ -36,40 +36,67 @@ class LNR {
         return result;
       }
 
+      domainToBytes32(_name){
+        let checkIsValid = this.isValidDomain(_name);
+        if(checkIsValid[0] == false){
+          throw checkIsValid[1];
+        }
+        else{
+          let normalized = checkIsValid[1];
+          let nameOnly = normalized.slice(0,-3);
+          return this.stringToBytes32(nameOnly);
+        }
+      }
+
 
       normalize(_name) {
         return ens_normalize(_name);
       }
 
-
-      isNormalized(_name) {
-        let normalized = ens_normalize(_name);
-        if((normalized.split(".").length - 1) > 1){
-          return false;
-        }
-        else if(!normalized.endsWith(".og")){
-          return false;
-        }
-        else if(_name === normalized)
-          return true;
-        else
-          return false;
+      owner(_name){
+        let that = this;
+        let nameBytes = this.domainToBytes32(_name);
+        return this.linageeContract.owner(nameBytes).then(function(result){
+          if(result === that.ethers.constants.AddressZero)
+            return null;
+          else{
+            if(result != that.wrapperAddress){
+              return [result, "unwrapped"];
+            }
+            else{
+              return that.wrapperContract.nameToId(nameBytes).then(function(tokenId){
+                return that.wrapperContract.ownerOf(tokenId).then(function(tokenOwner){
+                  return [tokenOwner, "wrapped"];
+                });
+              });
+            }
+          }
+        });
       }
 
-
-      async resolveName(_name) {
-        let normalized = ens_normalize(_name);
-
+      isValidDomain(_name){
+        let normalized = this.normalize(_name);
         if((normalized.split(".").length - 1) > 1){
-          throw 'Subdomains not supported at this time';
+          return [false, 'Subdomains not supported at this time']
         }
         else if(!normalized.endsWith(".og")){
-          throw 'Domain does not end in .og';
+          return [false,'Domain does not end in .og'];
         }
         else if(normalized.length > 35){
-          throw 'Domain too long';
+          return [false, 'Domain too long'];
         }
         else{
+          return [true, normalized];
+        }
+      }
+
+      async resolveName(_name) {
+        let checkIsValid = this.isValidDomain(_name);
+        if(checkIsValid[0] == false){
+          throw checkIsValid[1];
+        }
+        else{
+          let normalized = checkIsValid[1];
           const that = this;
           return this.resolverContract.resolve(normalized).then(function(result){
             if(result === that.ethers.constants.AddressZero)
