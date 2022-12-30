@@ -238,6 +238,32 @@ class LNR {
       return [true, owner[0]];
     }
 
+    async transfer(_to, _name){
+      let isUnwrappedOwner = await this.isUnwrappedOwner(_name);
+      if(!isUnwrappedOwner[0]){
+        throw isUnwrappedOwner[1];
+      }
+      else{
+        let nameBytes = this.domainToBytes32(_name);
+        return this.linageeContract.transfer(nameBytes, _to).then(function(result){
+          return result;
+        });
+      }
+    }
+
+    async reserve(_name){
+      let owner = await this.owner(_name);
+      if(owner != null){
+        throw "Domain already registered";
+      }
+      else{
+        let nameBytes = this.domainToBytes32(_name);
+        return this.linageeContract.reserve(nameBytes).then(function(result){
+          return result;
+        });
+      }
+    }
+
     owner(_name){
       let that = this;
       let nameBytes = this.domainToBytes32(_name);
