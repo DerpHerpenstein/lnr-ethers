@@ -48,6 +48,10 @@ class LNR {
         }
       }
 
+      bytes32ToDomain(_name){
+        return this.bytes32ToString(_name) + ".og";
+      }
+
 
       normalize(_name) {
         return ens_normalize(_name);
