@@ -49,7 +49,7 @@ class LNR {
       }
 
       bytes32ToDomain(_name){
-        return this.bytes32ToString(_name) + ".og";
+        return this.  bytes32ToString(_name) + ".og";
       }
 
 
@@ -58,9 +58,11 @@ class LNR {
       }
 
       isValidDomain(_name){
+        if(!_name || _name.length == 0)
+          return [false, "Emptry string passed"];
         let normalized = this.normalize(_name);
         if((normalized.split(".").length - 1) > 1){
-          return [false, 'Subdomains not supported at this time']
+          return [false, 'Subdomains not supported at this time'];
         }
         else if(!normalized.endsWith(".og")){
           return [false,'Domain does not end in .og'];
@@ -74,6 +76,14 @@ class LNR {
       }
 
       //--------------RESOLVER---------------------------
+
+      async verifyIsNameOwner(_name, _address) {
+        const that = this;
+        const nameBytes = this.domainToBytes32(_name);
+        return this.resolverContract.verifyIsNameOwner(nameBytes, _address).then(function(result){
+          return result;
+        });
+      }
 
       async resolveName(_name) {
         let checkIsValid = this.isValidDomain(_name);
@@ -102,10 +112,64 @@ class LNR {
         });
       }
 
+      async setPrimary(_name) {
+        if(this.verifyIsNameOwner(_name, (await this.signer.getAddress()))){
+          let nameBytes = this.domainToBytes32(_name);
+          return this.resolverContract.setPrimary(nameBytes).then(function(result){
+            return result;
+          });
+        }
+        else{
+          throw "Address is not the owner or controller";
+        }
+      }
+
+      async unsetPrimary() {
+        return this.resolverContract.unsetPrimary().then(function(result){
+          return result;
+        });
+      }
+
+      async setController(_name, _address){
+        let isUnwrappedOwner = await this.isUnwrappedOwner(_name);
+        if(!isUnwrappedOwner[0]){
+          throw isUnwrappedOwner[1];
+        }
+        else{
+          let nameBytes = this.domainToBytes32(_name);
+          return this.resolverContract.setController(nameBytes, _address).then(function(result){
+            return result;
+          });
+        }
+      }
+
+      async unsetController(_name) {
+        let isUnwrappedOwner = await this.isUnwrappedOwner(_name);
+        if(!isUnwrappedOwner[0]){
+          throw isUnwrappedOwner[1];
+        }
+        else{
+          let nameBytes = this.domainToBytes32(_name);
+          return this.resolverContract.unsetController(nameBytes).then(function(result){
+            return result;
+          });
+        }
+      }
+
 
     //--------------WRAPPER---------------------------
 
     //--------------LINAGEE---------------------------
+    async isUnwrappedOwner(_name){
+      let owner = await this.owner(_name);
+      if(owner == null || owner[0] != (await this.signer.getAddress())){
+        return [false, "This domain is not yours"];
+      }
+      else if(owner[1] == "wrapped"){
+        return [false, "Cannot set/unset controller on a wrapped name"];
+      }
+      return [true, owner[0]];
+    }
 
     owner(_name){
       let that = this;
