@@ -21,5 +21,5 @@ lnr.resolveName("herpenstein.og");
 Performs a reverse lookup of the address in LNR using the primary mapping in the resolver contract. If the address does not have a primary configured null is returned
 ```
 await test.lookupAddress("0x00F6426fD5215B0c9A2BFC66D49fA5909FaB7701");
-//  herpenstein.of
+//  herpenstein.og
 ```
