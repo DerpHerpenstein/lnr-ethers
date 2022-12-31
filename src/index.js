@@ -56,6 +56,7 @@ class LNR {
       }
 
       isValidDomain(_name){
+        const byteSize = function(str){return (new Blob([str]).size)};
         if(!_name || _name.length == 0)
           return [false, "Emptry string passed"];
         let normalized = this.normalize(_name);
@@ -65,7 +66,7 @@ class LNR {
         else if(!normalized.endsWith(".og")){
           return [false,'Domain does not end in .og'];
         }
-        else if(normalized.length > 35){
+        else if(byteSize(normalized) > 35){
           return [false, 'Domain too long'];
         }
         else{
@@ -180,6 +181,18 @@ class LNR {
           return result;
         });
       }
+    }
+
+    async waitForWrap(_name){
+      let nameBytes = this.domainToBytes32(_name);
+      let that = this;
+      return this.wrapperContract.waitForWrap(nameBytes).then(function(result){
+        if(result === that.ethers.constants.AddressZero)
+          return null;
+        else{
+          return result;
+        }
+      });
     }
 
     async unwrap(_name){
