@@ -2,13 +2,13 @@
 <p align="center">
   <img src="https://github.com/Linagee-Name-Registrar/Brand-Kit/blob/main/icon/svg/lnr_icon_box.svg" alt="LNR Logo" width=33% height=33%>
 </p>
-This package simplifies interacting with the Linagee Name Register contract, wrapper and resolver.
+This package simplifies interacting with the Linagee Name Registrar contract, wrapper and resolver.
 
-To generate the library, run "npx webpack"
+To generate the library, run "npx webpack" to generate the library
 
-## lnr-ethers - Getting Started
+## Getting Started
 ### Note: for domains to be used with the resolver, they must first be unwrapped
-After you generated the library, add it to your ethers project with a script tag after you import ethers.js
+After you've generated the library, add it to your ethers project with a script tag after you import ethers.js
 
 ```
 <script src="https://cdn.ethers.io/lib/ethers-5.2.umd.min.js" type="application/javascript"></script>
@@ -25,9 +25,11 @@ let lnr = new LNR(ethers, signer);
 
 ```
 
-#Resolver Contract
+
+
+# Resolver Contract
 ## lnr.resolveName - [Resolver Contract]
-Looks up the address of name.  If the name does not have a primary configured null is returned
+Looks up the address of name.  If the name does not have a primary configured, returns null
 
 ```
 lnr.resolveName("herpenstein.og");
@@ -35,7 +37,7 @@ lnr.resolveName("herpenstein.og");
 ```
 
 ## lnr.lookupAddress - [Resolver Contract]
-Performs a reverse lookup of the address in LNR using the primary mapping in the resolver contract. If the address does not have a primary configured null is returned
+Performs a reverse lookup of the address using the primary mapping in the resolver contract. If the address does not have a primary configured, returns null
 ```
 await lnr.lookupAddress("0x00F6426fD5215B0c9A2BFC66D49fA5909FaB7701");
 //  herpenstein.og
@@ -54,7 +56,7 @@ await lnr.unsetPrimary();
 ```
 
 ## lnr.setController - [Resolver Contract]
-Callable by the domain owner, this function delegates a controller address that will be able to use this domain like it belongs to them. (Note: domain must be unwrapped)
+Callable by the domain owner, this function delegates a controller address that will be able to use this domain as its primary. (Note: domain must be unwrapped)
 ```
 await lnr.setController("0x00F6426fD5215B0c9A2BFC66D49fA5909FaB7701");
 ```
@@ -71,7 +73,9 @@ Checks to see if the address specified is the owner or a controller of the domai
 await lnr.verifyIsNameOwner("herpenstein.og", "0x00F6426fD5215B0c9A2BFC66D49fA5909FaB7701");
 ```
 
-#Wrapper Contract
+
+
+# Wrapper Contract
 ## Note: There are 4 steps to wrapping a domain
 1. Create the wrapper with: lnr.createWrapper(domainName)
 2. Ensure the users address is returned by: lnr.waitForWrap(domainName)
@@ -103,7 +107,9 @@ Transfers a wrapped domain
 await lnr.safeTransferFrom(fromAddress, toAddress, "herpenstein.og");
 ```
 
-#Original Linagee Contract
+
+
+# Original Linagee Contract
 ## lnr.owner - [Linagee Contract]
 Returns [ownerAddress, wrappedStatus] of a specified domain
 ```
