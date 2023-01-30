@@ -1,4 +1,3 @@
-import {ethers} from 'ethers';
 import {ens_normalize} from '@adraffy/ens-normalize';
 import resolverAbi from '../abi/lnrResolverAbi.json';
 import wrapperAbi from '../abi/wrapperAbi.json';
@@ -25,7 +24,6 @@ class LNR {
   /**
    * Creates a new instance of the LNR class
    *
-   *  TODO - Idea - remove _ethers parameter? and use the one from import?
    *  TODO - Idea - remove _ethers and _signer parameters and replace with _provider?
    *
    * @param {ethers} _ethers An instance of ethers
@@ -37,10 +35,6 @@ class LNR {
     this.resolverAbi = resolverAbi;
     this.wrapperAbi = wrapperAbi;
     this.linageeAbi = linageeAbi;
-    // TODO - remove these
-    // this.resolverAddress = "0x6023E55814DC00F094386d4eb7e17Ce49ab1A190";
-    // this.wrapperAddress = "0x2Cc8342d7c8BFf5A213eb2cdE39DE9a59b3461A7";
-    // this.linageeAddress = "0x5564886ca2C518d1964E5FCea4f423b41Db9F561";
     this.resolverContract = new this.ethers.Contract(LNR.RESOLVER_ADDRESS, this.resolverAbi, this.signer);
     this.wrapperContract = new this.ethers.Contract(LNR.WRAPPER_ADDRESS, this.wrapperAbi, this.signer);
     this.linageeContract = new this.ethers.Contract(LNR.LINAGEE_ADDRESS, this.linageeAbi, this.signer);
@@ -78,10 +72,10 @@ class LNR {
   }
 
   /**
-   * TODO - add description
+   * Converts a domain (Ex:test.og) into a bytes32 value (0x..)
    *
-   * @param _name
-   * @returns
+   * @param _name The domain string
+   * @returns The bytes32 value
    */
   domainToBytes32(_name) {
     let checkIsValid = this.isValidDomain(_name);
@@ -95,17 +89,17 @@ class LNR {
   }
 
   /**
-   * TODO - add description
+   * Converts a bytes32 to a domain
    *
-   * @param _name
-   * @returns {string}
+   * @param _name Bytes32
+   * @returns {string} Domain
    */
   bytes32ToDomain(_name) {
         return this.bytes32ToString(_name) + ".og";
       }
 
   /**
-   * TODO - add description
+   * Uses adraffy/ens-normalize to normalize a string
    *
    * @param _name The domain to normalize
    * @returns {string} The normalized domain
@@ -115,7 +109,8 @@ class LNR {
       }
 
   /**
-   * TODO - add description
+   * Takes a domain, normalizes it, checks that it is not a subdomain, is an og
+   * domain, and isnt too long
    *
    * @param _name The domain to check
    * @returns an array with the first element being a boolean indicating if the domain is valid,
@@ -144,7 +139,7 @@ class LNR {
   //--------------------------- RESOLVER ---------------------------
 
   /**
-   * Verifies that a domain is owned by a given address
+   * Verifies that a domain is owned or controlled by a given address
    *
    * @param _name The domain to check
    * @param _address The address to check
@@ -159,7 +154,7 @@ class LNR {
       }
 
   /**
-   * TODO - add description
+   * Resolves the primary address of the domain, if there is no primary, returns null
    *
    * @param _name The domain to check
    * @returns
@@ -181,10 +176,10 @@ class LNR {
       }
 
   /**
-   * TODO - add description
+   * Finds the primary domain of an address, if the primary is not set, returns null
    *
    * @param _address The address to check
-   * @returns
+   * @returns primary domain
    */
   async lookupAddress(_address) {
         const that = this;
@@ -352,7 +347,7 @@ class LNR {
     }
 
   /**
-   * Transfers the given domain from one address to another
+   * Transfers the given wrapped domain from one address to another
    *
    * @param {string} _from The address from which to transfer the domain
    * @param {string} _to The address to which to transfer the domain
@@ -382,10 +377,11 @@ class LNR {
   //--------------------------- LINAGEE ---------------------------
 
   /**
-   * TODO - add description
+   * Checks if a caller is the owner of the unwrapped domain returns [true,ownerAddress]
+   * or [false, errorString]
    *
    * @param _name The domain for which to do the check
-   * @returns
+   * @returns an array [true/false, owner/error]
    */
     async isUnwrappedOwner(_name) {
       let owner = await this.owner(_name);
@@ -399,7 +395,7 @@ class LNR {
     }
 
   /**
-   * Transfers the given domain to the specified address
+   * Transfers the given unwrapped domain to the specified address
    *
    * @param _to The address to which to transfer the domain
    * @param _name The domain to transfer
@@ -438,10 +434,11 @@ class LNR {
     }
 
   /**
-   * TODO - add description
+   * Checks to see who owns the domain, and whether it is wrapped or not.  If
+   * the domain isn't owned, returns null
    *
    * @param _name The domain for which to do the check
-   * @returns
+   * @returns an array [tokenOwner, wrapped/unwrapped]
    */
     async owner(_name) {
       let that = this;
