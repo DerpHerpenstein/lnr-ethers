@@ -4,7 +4,7 @@
 </p>
 This package simplifies interacting with the Linagee Name Registrar contract, wrapper and resolver.
 
-To generate the library, run "npx webpack" to generate the library
+To generate the library, run "npx webpack"
 
 ## Getting Started
 ### Note: for domains to be used with the resolver, they must first be unwrapped
