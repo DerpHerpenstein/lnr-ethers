@@ -29,7 +29,7 @@ if (true/*env === 'production'*/) {
       },
     },
     optimization: {
-        minimize: false
+        minimize: true
     },
   };
 
