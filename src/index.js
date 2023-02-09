@@ -135,6 +135,22 @@ class LNR {
         }
       }
 
+  isNormalizedName(_name) {
+      let validName = this.isValidDomain(_name);
+      if(validName[1] === _name){
+        return(true)
+      }
+      return(false)
+    }
+
+  isNormalizedBytes(_bytes) {
+      let validName = this.isValidDomain(this.bytes32ToDomain(_bytes));
+      if(this.domainToBytes32(validName[1]) === _bytes){
+        return(true)
+      }
+      return(false)
+    }
+
 
   //--------------------------- RESOLVER ---------------------------
 
