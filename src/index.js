@@ -26,6 +26,7 @@ class LNR {
    *
    *  TODO - Idea - remove _ethers and _signer parameters and replace with _provider?
    *
+   * @constructor
    * @param {ethers} _ethers An instance of ethers
    * @param _signer An instance of ethers Signer
    */
@@ -118,22 +119,50 @@ class LNR {
    */
   isValidDomain(_name) {
         const byteSize = function(str){return (new Blob([str]).size)};
-        if(!_name || _name.length == 0)
+        if (!_name || _name.length == 0)
           return [false, "Empty string passed"];
         let normalized = this.normalize(_name);
-        if((normalized.split(".").length - 1) > 1){
+        if ((normalized.split(".").length - 1) > 1) {
           return [false, 'Subdomains not supported at this time'];
         }
-        else if(!normalized.endsWith(".og")){
+        else if (!normalized.endsWith(".og")) {
           return [false,'Domain does not end in .og'];
         }
-        else if(byteSize(normalized) > 35){
+        else if (byteSize(normalized) > 35) {
           return [false, 'Domain too long'];
         }
-        else{
+        else {
           return [true, normalized];
         }
       }
+
+  /**
+   * Checks if a domain is normalized
+   *
+   * @param _name The domain to check
+   * @returns {boolean} True if the domain is normalized, false otherwise
+   */
+  isNormalizedName(_name) {
+      let validName = this.isValidDomain(_name);
+      if (validName[1] === _name) {
+        return(true)
+      }
+      return(false)
+    }
+
+  /**
+   * Checks if a domain is normalized
+   *
+   * @param _bytes The bytes32 value of the domain to check
+   * @returns {boolean} True if the domain is normalized, false otherwise
+   */
+  isNormalizedBytes(_bytes) {
+      let validName = this.isValidDomain(this.bytes32ToDomain(_bytes));
+      if (this.domainToBytes32(validName[1]) === _bytes) {
+        return(true)
+      }
+      return(false)
+    }
 
 
   //--------------------------- RESOLVER ---------------------------
@@ -148,7 +177,7 @@ class LNR {
   async verifyIsNameOwner(_name, _address) {
         const that = this;
         const nameBytes = this.domainToBytes32(_name);
-        return this.resolverContract.verifyIsNameOwner(nameBytes, _address).then(function(result){
+        return this.resolverContract.verifyIsNameOwner(nameBytes, _address).then(function(result) {
           return result;
         });
       }
@@ -161,14 +190,14 @@ class LNR {
    */
   async resolveName(_name) {
         let checkIsValid = this.isValidDomain(_name);
-        if(checkIsValid[0] == false){
+        if (checkIsValid[0] == false) {
           throw checkIsValid[1];
         }
-        else{
+        else {
           let normalized = checkIsValid[1];
           const that = this;
-          return this.resolverContract.resolve(normalized).then(function(result){
-            if(result === that.ethers.constants.AddressZero)
+          return this.resolverContract.resolve(normalized).then(function(result) {
+            if (result === that.ethers.constants.AddressZero)
               return null;
             return result;
           });
@@ -183,9 +212,9 @@ class LNR {
    */
   async lookupAddress(_address) {
         const that = this;
-        return this.resolverContract.primary(_address).then(function(result){
+        return this.resolverContract.primary(_address).then(function(result) {
           const domain = that.bytes32ToString(result);
-          if(domain.length == 0)
+          if (domain.length == 0)
             return null;
           return domain + ".og";
         });
@@ -200,13 +229,13 @@ class LNR {
    * @returns
    */
   async setPrimary(_name) {
-        if(this.verifyIsNameOwner(_name, (await this.signer.getAddress()))){
+        if (this.verifyIsNameOwner(_name, (await this.signer.getAddress()))) {
           let nameBytes = this.domainToBytes32(_name);
-          return this.resolverContract.setPrimary(nameBytes).then(function(result){
+          return this.resolverContract.setPrimary(nameBytes).then(function(result) {
             return result;
           });
         }
-        else{
+        else {
           throw "Address is not the owner or controller";
         }
       }
@@ -217,7 +246,7 @@ class LNR {
    * @returns
    */
   async unsetPrimary() {
-        return this.resolverContract.unsetPrimary().then(function(result){
+        return this.resolverContract.unsetPrimary().then(function(result) {
           return result;
         });
       }
@@ -233,12 +262,12 @@ class LNR {
    */
   async setController(_name, _address) {
         let isUnwrappedOwner = await this.isUnwrappedOwner(_name);
-        if(!isUnwrappedOwner[0]){
+        if (!isUnwrappedOwner[0]) {
           throw isUnwrappedOwner[1];
         }
-        else{
+        else {
           let nameBytes = this.domainToBytes32(_name);
-          return this.resolverContract.setController(nameBytes, _address).then(function(result){
+          return this.resolverContract.setController(nameBytes, _address).then(function(result) {
             return result;
           });
         }
@@ -252,12 +281,12 @@ class LNR {
    */
   async unsetController(_name) {
         let isUnwrappedOwner = await this.isUnwrappedOwner(_name);
-        if(!isUnwrappedOwner[0]){
+        if (!isUnwrappedOwner[0]) {
           throw isUnwrappedOwner[1];
         }
-        else{
+        else {
           let nameBytes = this.domainToBytes32(_name);
-          return this.resolverContract.unsetController(nameBytes).then(function(result){
+          return this.resolverContract.unsetController(nameBytes).then(function(result) {
             return result;
           });
         }
@@ -274,12 +303,12 @@ class LNR {
    */
     async createWrapper(_name) {
       let isUnwrappedOwner = await this.isUnwrappedOwner(_name);
-      if(!isUnwrappedOwner[0]){
+      if (!isUnwrappedOwner[0]) {
         throw isUnwrappedOwner[1];
       }
-      else{
+      else {
         let nameBytes = this.domainToBytes32(_name);
-        return this.wrapperContract.createWrapper(nameBytes).then(function(result){
+        return this.wrapperContract.createWrapper(nameBytes).then(function(result) {
           return result;
         });
       }
@@ -293,12 +322,12 @@ class LNR {
    */
     async wrap(_name) {
       let isUnwrappedOwner = await this.isUnwrappedOwner(_name);
-      if(!isUnwrappedOwner[0]){
+      if (!isUnwrappedOwner[0]) {
         throw isUnwrappedOwner[1];
       }
-      else{
+      else {
         let nameBytes = this.domainToBytes32(_name);
-        return this.wrapperContract.wrap(nameBytes).then(function(result){
+        return this.wrapperContract.wrap(nameBytes).then(function(result) {
           return result;
         });
       }
@@ -313,10 +342,10 @@ class LNR {
     async waitForWrap(_name) {
       let nameBytes = this.domainToBytes32(_name);
       let that = this;
-      return this.wrapperContract.waitForWrap(nameBytes).then(function(result){
-        if(result === that.ethers.constants.AddressZero)
+      return this.wrapperContract.waitForWrap(nameBytes).then(function(result) {
+        if (result === that.ethers.constants.AddressZero) {
           return null;
-        else{
+        } else {
           return result;
         }
       });
@@ -330,16 +359,16 @@ class LNR {
    */
     async unwrap(_name) {
       let isUnwrappedOwner = await this.isUnwrappedOwner(_name);
-      if(isUnwrappedOwner.length == 3 && isUnwrappedOwner[2] == (await this.signer.getAddress())){
+      if (isUnwrappedOwner.length == 3 && isUnwrappedOwner[2] == (await this.signer.getAddress())) {
         let nameBytes = this.domainToBytes32(_name);
         let that = this;
-        return that.wrapperContract.nameToId(nameBytes).then(function(tokenId){
-          return that.wrapperContract.unwrap(tokenId).then(function(result){
+        return that.wrapperContract.nameToId(nameBytes).then(function(tokenId) {
+          return that.wrapperContract.unwrap(tokenId).then(function(result) {
             return result;
           });
         });
       }
-      else if(isUnwrappedOwner[0] == true) {
+      else if (isUnwrappedOwner[0] == true) {
         throw "This domain is unwrapped";
       } else {
         throw isUnwrappedOwner[1];
@@ -356,17 +385,17 @@ class LNR {
    */
     async safeTransferFrom(_from, _to, _name) {
       let isUnwrappedOwner = await this.isUnwrappedOwner(_name);
-      if(isUnwrappedOwner.length == 3 && isUnwrappedOwner[2] == (await this.signer.getAddress())){
+      if (isUnwrappedOwner.length == 3 && isUnwrappedOwner[2] == (await this.signer.getAddress())) {
         let nameBytes = this.domainToBytes32(_name);
         let that = this;
-        return that.wrapperContract.nameToId(nameBytes).then(function(tokenId){
-          return that.wrapperContract["safeTransferFrom(address,address,uint256)"](_from, _to, tokenId).then(function(result){
+        return that.wrapperContract.nameToId(nameBytes).then(function(tokenId) {
+          return that.wrapperContract["safeTransferFrom(address,address,uint256)"](_from, _to, tokenId).then(function(result) {
             return result;
           });
         });
 
       }
-      else if(isUnwrappedOwner[0] == true) {
+      else if (isUnwrappedOwner[0] == true) {
         throw "This domain is unwrapped";
       } else {
         throw isUnwrappedOwner[1];
@@ -385,10 +414,10 @@ class LNR {
    */
     async isUnwrappedOwner(_name) {
       let owner = await this.owner(_name);
-      if(owner == null || owner[0] != (await this.signer.getAddress())){
+      if (owner == null || owner[0] != (await this.signer.getAddress())) {
         return [false, "This domain is not yours"];
       }
-      else if(owner[1] == "wrapped"){
+      else if (owner[1] == "wrapped") {
         return [false, "This domain is wrapped", owner[0]];
       }
       return [true, owner[0]];
@@ -403,12 +432,12 @@ class LNR {
    */
     async transfer(_to, _name) {
       let isUnwrappedOwner = await this.isUnwrappedOwner(_name);
-      if(!isUnwrappedOwner[0]){
+      if (!isUnwrappedOwner[0]) {
         throw isUnwrappedOwner[1];
       }
-      else{
+      else {
         let nameBytes = this.domainToBytes32(_name);
-        return this.linageeContract.transfer(nameBytes, _to).then(function(result){
+        return this.linageeContract.transfer(nameBytes, _to).then(function(result) {
           return result;
         });
       }
@@ -422,12 +451,12 @@ class LNR {
    */
     async reserve(_name) {
       let owner = await this.owner(_name);
-      if(owner != null){
+      if (owner != null) {
         throw "Domain already registered";
       }
-      else{
+      else {
         let nameBytes = this.domainToBytes32(_name);
-        return this.linageeContract.reserve(nameBytes).then(function(result){
+        return this.linageeContract.reserve(nameBytes).then(function(result) {
           return result;
         });
       }
@@ -443,15 +472,15 @@ class LNR {
     async owner(_name) {
       let that = this;
       let nameBytes = this.domainToBytes32(_name);
-      return this.linageeContract.owner(nameBytes).then(function(result){
+      return this.linageeContract.owner(nameBytes).then(function(result) {
         if (result === that.ethers.constants.AddressZero)
           return null;
         else {
-          if(result != LNR.WRAPPER_ADDRESS) {
+          if (result != LNR.WRAPPER_ADDRESS) {
             return [result, "unwrapped"];
           } else {
-            return that.wrapperContract.nameToId(nameBytes).then(function(tokenId){
-              return that.wrapperContract.ownerOf(tokenId).then(function(tokenOwner){
+            return that.wrapperContract.nameToId(nameBytes).then(function(tokenId) {
+              return that.wrapperContract.ownerOf(tokenId).then(function(tokenOwner) {
                 return [tokenOwner, "wrapped"];
               });
             });

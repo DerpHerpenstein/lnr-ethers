@@ -1,6 +1,6 @@
 {
   "name": "lnr-ethers",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Integrates the LNR resolver and Ethers in an easy to use package",
   "main": "index.js",
   "scripts": {
@@ -21,7 +21,9 @@
   "dependencies": {
     "@adraffy/ens-normalize": "1.8.8",
     "ethers": "^5.7.2",
-    "npm-packlist": "^7.0.4",
+    "npm-packlist": "^7.0.4"
+  },
+  "devDependencies": {
     "webpack-cli": "^5.0.1"
   }
 }

@@ -126,5 +126,5 @@ await lnr.reserve("herpenstein.og");
 ## lnr.transfer- [Linagee Contract]
 Transfers an unwrapped domain to the specified address
 ```
-await lnr.reserve("0x00F6426fD5215B0c9A2BFC66D49fA5909FaB7701", "herpenstein.og");
+await lnr.transfer("0x00F6426fD5215B0c9A2BFC66D49fA5909FaB7701", "herpenstein.og");
 ```
